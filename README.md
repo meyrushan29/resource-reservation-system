@@ -113,7 +113,7 @@ erDiagram
     }
 ```
 
-**ER diagram link:** _add your mermaid.live or dbdiagram.io link here (see [docs/er-diagram.md](docs/er-diagram.md#publishing-a-shareable-link))._
+**ER diagram (shareable link):** <https://drive.google.com/file/d/16ZCnLvu152ZG6VtkMVU80GUA5OLiEudE/view?usp=sharing>. The draw.io source is in [`docs/er-diagram.drawio`](docs/er-diagram.drawio).
 
 Highlights:
 
@@ -192,7 +192,7 @@ before it is compared or stored. Local time strings are never compared across da
 ### 1. Install
 
 ```bash
-git clone <your-repo-url> resource-reservation-system
+git clone https://github.com/meyrushan29/resource-reservation-system.git
 cd resource-reservation-system
 cp .env.example .env              # Windows PowerShell: Copy-Item .env.example .env
 cp .env.test.example .env.test    # Windows PowerShell: Copy-Item .env.test.example .env.test
@@ -314,6 +314,7 @@ Integration and end-to-end tests use **only** the `_test` database. Each reset r
 ## Project documents
 
 - [`docs/er-diagram.md`](docs/er-diagram.md): ER diagram (Mermaid), constraints, publishing steps
+- [`docs/er-diagram.drawio`](docs/er-diagram.drawio): ER diagram source for draw.io / diagrams.net
 - [`docs/schema.dbml`](docs/schema.dbml): dbdiagram.io definition
 - [`docs/demo-script.md`](docs/demo-script.md): 3–5 minute demo video script
 - [`docs/vertical-slices.md`](docs/vertical-slices.md): delivery plan (vertical slices)

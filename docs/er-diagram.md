@@ -56,9 +56,17 @@ erDiagram
 | `reservations_no_overlap` | EXCLUDE (GiST, `btree_gist`) | `(resource_id WITH =, tstzrange(starts_at, ends_at, '[)') WITH &&) WHERE (status = 'CONFIRMED')` |
 | Indexes | B-tree | `resources(type)`, `resources(is_active)`, `reservations(resource_id, starts_at)`, `reservations(starts_at)`, `reservations(status, starts_at)`, `reservations(updated_at)` |
 
-## Publishing a shareable link
+## Shareable link
 
-The repository does not contain a published link. To create one:
+**Published diagram:** <https://drive.google.com/file/d/16ZCnLvu152ZG6VtkMVU80GUA5OLiEudE/view?usp=sharing>
+
+The source is [`er-diagram.drawio`](er-diagram.drawio), which you can open at <https://app.diagrams.net>.
+
+## Publishing or updating the link
+
+To update the published copy without changing the link: in Google Drive, right-click the file,
+choose **File information → Manage versions → Upload new version**, and select `docs/er-diagram.drawio`.
+Alternatively, publish it through one of these services:
 
 **Option A: Mermaid Live Editor**
 1. Open <https://mermaid.live>.
