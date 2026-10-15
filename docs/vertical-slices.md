@@ -126,7 +126,7 @@ Slices are ordered by the assessment's priorities (P1 core → P2 UX → P3 poli
 - Deterministic `prisma/seed.ts` ("[Demo]" labelled): ~8 resources (1 inactive), ~25 non-overlapping reservations spread across past/today/upcoming, some cancelled. Seed relies on the constraint, so overlaps would fail loudly.
 
 ### Slice 14 — Documentation & GitHub readiness
-- `README.md` (all sections required by the brief, commands matching `package.json`), `docs/er-diagram.md` (Mermaid) + `docs/schema.dbml` (dbdiagram.io) with publishing steps, `docs/demo-script.md` (3–5 min).
+- `README.md` (all sections required by the brief, commands matching `package.json`), `docs/er-diagram.md` (Mermaid) + `docs/schema.dbml` (dbdiagram.io) with publishing steps.
 - Full check run: install → generate → migrate → seed → unit → integration → e2e → lint → typecheck → build. Report real results.
 - **Manual steps left for the candidate:** push to GitHub, publish ER diagram and paste the real link, record the demo video.
 

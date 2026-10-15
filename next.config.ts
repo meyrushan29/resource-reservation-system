@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Don't auto-generate AGENTS.md in the project root.
+  agentRules: false,
 };
 
 export default nextConfig;

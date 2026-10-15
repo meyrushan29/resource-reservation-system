@@ -7,6 +7,9 @@ Built for the PrimeWave Lab (Pvt) Ltd Software Engineering Internship technical 
 
 ---
 
+**Demo video:** <https://drive.google.com/file/d/1tsaFm2qOkHz5T89zDBl_C3CVUr1m5jTX/view?usp=sharing>  
+**ER diagram:** <https://drive.google.com/file/d/1UAleSLqzS7hOkRtsJ_cl8gkEPKgfgSv7/view?usp=sharing>
+
 ## Business problem
 
 Shared facilities are booked through informal messages and manual records. This leads to
@@ -113,7 +116,7 @@ erDiagram
     }
 ```
 
-**ER diagram (shareable link):** <https://drive.google.com/file/d/16ZCnLvu152ZG6VtkMVU80GUA5OLiEudE/view?usp=sharing>. The draw.io source is in [`docs/er-diagram.drawio`](docs/er-diagram.drawio).
+**ER diagram (shareable link):** <https://drive.google.com/file/d/1UAleSLqzS7hOkRtsJ_cl8gkEPKgfgSv7/view?usp=sharing>. The draw.io source is in [`docs/er-diagram.drawio`](docs/er-diagram.drawio).
 
 Highlights:
 
@@ -316,5 +319,4 @@ Integration and end-to-end tests use **only** the `_test` database. Each reset r
 - [`docs/er-diagram.md`](docs/er-diagram.md): ER diagram (Mermaid), constraints, publishing steps
 - [`docs/er-diagram.drawio`](docs/er-diagram.drawio): ER diagram source for draw.io / diagrams.net
 - [`docs/schema.dbml`](docs/schema.dbml): dbdiagram.io definition
-- [`docs/demo-script.md`](docs/demo-script.md): 3–5 minute demo video script
 - [`docs/vertical-slices.md`](docs/vertical-slices.md): delivery plan (vertical slices)

@@ -58,7 +58,7 @@ erDiagram
 
 ## Shareable link
 
-**Published diagram:** <https://drive.google.com/file/d/16ZCnLvu152ZG6VtkMVU80GUA5OLiEudE/view?usp=sharing>
+**Published diagram:** <https://drive.google.com/file/d/1UAleSLqzS7hOkRtsJ_cl8gkEPKgfgSv7/view?usp=sharing>
 
 The source is [`er-diagram.drawio`](er-diagram.drawio), which you can open at <https://app.diagrams.net>.
 
