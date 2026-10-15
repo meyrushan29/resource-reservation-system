@@ -1,103 +1,271 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  Ban,
+  Boxes,
+  CalendarClock,
+  CalendarDays,
+  CalendarPlus,
+  CheckCircle2,
+  ClipboardList,
+  FilePlus2,
+  PencilLine,
+  Plus,
+  type LucideIcon,
+} from "lucide-react";
+import { ReservationTable } from "@/components/reservations/reservation-table";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AvailabilityPill } from "@/components/shared/status-badges";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  getDashboardStats,
+  getRecentReservationChanges,
+  getResourceAvailability,
+  getUpcomingReservations,
+} from "@/lib/services/dashboard";
+import { formatReference } from "@/lib/utils/format";
+import { formatDate, formatDateTime, formatTime, todayLocal, formatLocalDateLabel } from "@/lib/utils/time";
+import { RESOURCE_TYPE_LABELS } from "@/lib/validations/resource";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+function StatCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  href,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  icon: LucideIcon;
+  href: string;
+}) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <Link
+      href={href}
+      className="group rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      aria-label={`${label}: ${value}. ${hint}`}
+    >
+      <Card className="h-full transition-colors group-hover:ring-primary/30">
+        <CardContent className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-muted-foreground">{label}</p>
+            <p className="mt-1 text-3xl font-semibold tabular-nums" data-testid={`stat-${label.toLowerCase().replace(/[^a-z]+/g, "-")}`}>
+              {value}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+          </div>
+          <span className="flex size-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+            <Icon className="size-4.5" aria-hidden="true" />
+          </span>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+function activityFor(r: { status: string; createdAt: Date; updatedAt: Date; cancelledAt: Date | null }) {
+  if (r.status === "CANCELLED") return { label: "Cancelled", icon: Ban, at: r.cancelledAt ?? r.updatedAt };
+  if (r.updatedAt.getTime() - r.createdAt.getTime() > 1000) return { label: "Updated", icon: PencilLine, at: r.updatedAt };
+  return { label: "Created", icon: FilePlus2, at: r.createdAt };
+}
+
+export default async function DashboardPage() {
+  const now = new Date();
+  const [stats, upcoming, availability, recent] = await Promise.all([
+    getDashboardStats(now),
+    getUpcomingReservations(6, now),
+    getResourceAvailability(now),
+    getRecentReservationChanges(6),
+  ]);
+  const today = todayLocal(now);
+
+  return (
+    <>
+      <PageHeader
+        title="Dashboard"
+        description={`Overview for ${formatLocalDateLabel(today, "EEEE, d MMMM yyyy")}`}
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link href="/resources/new">
+                <Plus aria-hidden="true" /> Add resource
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/reservations/new">
+                <CalendarPlus aria-hidden="true" /> Create reservation
+              </Link>
+            </Button>
+          </>
+        }
+      />
+
+      <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <StatCard label="Total resources" value={stats.totalResources} hint="All rooms and equipment" icon={Boxes} href="/resources" />
+        <StatCard
+          label="Active resources"
+          value={stats.activeResources}
+          hint={`${stats.totalResources - stats.activeResources} inactive`}
+          icon={CheckCircle2}
+          href="/resources?status=active"
+        />
+        <StatCard
+          label="Today's reservations"
+          value={stats.todaysReservations}
+          hint="Confirmed, any time today"
+          icon={CalendarClock}
+          href={`/reservations?view=all&status=CONFIRMED&date=${today}`}
+        />
+        <StatCard
+          label="Upcoming reservations"
+          value={stats.upcomingReservations}
+          hint="Confirmed, not yet started"
+          icon={ClipboardList}
+          href="/reservations"
+        />
+        <StatCard
+          label="Cancelled reservations"
+          value={stats.cancelledReservations}
+          hint="Kept for history"
+          icon={Ban}
+          href="/reservations?view=cancelled"
+        />
+      </section>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+        <section aria-labelledby="upcoming-heading" className="space-y-3 xl:col-span-2">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="upcoming-heading" className="text-base font-semibold">
+              Upcoming reservations
+            </h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/reservations">View all</Link>
+            </Button>
+          </div>
+          {upcoming.length === 0 ? (
+            <EmptyState
+              icon={CalendarDays}
+              title="No upcoming reservations"
+              description="New bookings will appear here."
+              action={
+                <Button asChild>
+                  <Link href="/reservations/new">Create reservation</Link>
+                </Button>
+              }
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          ) : (
+            <ReservationTable items={upcoming.map((r) => ({ ...r }))} compact />
+          )}
+        </section>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick actions</CardTitle>
+            <CardDescription>Common tasks</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {[
+              { href: "/reservations/new", label: "Create reservation", icon: CalendarPlus },
+              { href: "/resources/new", label: "Add resource", icon: Plus },
+              { href: "/calendar", label: "View calendar", icon: CalendarDays },
+              { href: "/reservations?view=all", label: "View all reservations", icon: ClipboardList },
+            ].map(({ href, label, icon: Icon }) => (
+              <Button key={href} asChild variant="outline" className="h-10 justify-start">
+                <Link href={href}>
+                  <Icon aria-hidden="true" /> {label}
+                </Link>
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>Resource availability</CardTitle>
+            <CardDescription>Right now ({formatTime(now)}), based on confirmed reservations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {availability.length === 0 ? (
+              <EmptyState icon={Boxes} title="No resources yet" description="Add resources to see their availability." />
+            ) : (
+              <ul className="divide-y" data-testid="availability-list">
+                {availability.map(({ resource, state, bookingsLeftToday }) => (
+                  <li key={resource.id} className="flex flex-col gap-1.5 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <Link href={`/resources/${resource.id}`} className="font-medium hover:underline">
+                        {resource.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        {RESOURCE_TYPE_LABELS[resource.type]}
+                        {resource.location ? ` · ${resource.location}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-start gap-1 sm:items-end">
+                      {state.kind === "inactive" && <AvailabilityPill kind="inactive">Inactive</AvailabilityPill>}
+                      {state.kind === "in-use" && (
+                        <AvailabilityPill kind="in-use">In use until {formatTime(state.nextFreeAt)}</AvailabilityPill>
+                      )}
+                      {state.kind === "available" && <AvailabilityPill kind="available">Available now</AvailabilityPill>}
+                      {state.kind === "available" && (
+                        <span className="text-xs text-muted-foreground">
+                          {state.nextStartsAt
+                            ? `Next booking today at ${formatTime(state.nextStartsAt)}`
+                            : "No more bookings today"}
+                        </span>
+                      )}
+                      {state.kind === "in-use" && bookingsLeftToday > 1 && (
+                        <span className="text-xs text-muted-foreground">{bookingsLeftToday} bookings left today</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent activity</CardTitle>
+            <CardDescription>Latest reservation changes (from stored timestamps)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recent.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No reservations yet.</p>
+            ) : (
+              <ol className="grid gap-3">
+                {recent.map((r) => {
+                  const activity = activityFor(r);
+                  const Icon = activity.icon;
+                  return (
+                    <li key={r.id} className="flex gap-3">
+                      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <Icon className="size-3.5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 text-sm">
+                        <p className="truncate">
+                          <span className="font-medium">{activity.label}</span>{" "}
+                          <Link href={`/reservations/${r.id}`} className="font-mono text-xs hover:underline">
+                            {formatReference(r.number)}
+                          </Link>
+                        </p>
+                        <p className="truncate text-muted-foreground">
+                          {r.resource.name} · {formatDate(r.startsAt)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{formatDateTime(activity.at)}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
