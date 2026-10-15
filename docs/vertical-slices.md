@@ -4,6 +4,8 @@ Each slice is a thin, end-to-end increment: **schema → validation → service 
 A slice is done only when it runs locally, its tests pass, lint/typecheck are clean, and it is committed.
 Slices are ordered by the assessment's priorities (P1 core → P2 UX → P3 polish/submission).
 
+> **Status (2026-10-15):** S0–S14 are implemented. The checks and results are listed in the README's "Testing" section. Three manual submission steps remain (pushing to GitHub, publishing the ER diagram link, recording the video), as listed under S14.
+
 ## Workspace findings (2026-10-15)
 
 - Workspace is empty — new Next.js project required.
