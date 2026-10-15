@@ -1,0 +1,73 @@
+// Resource Reservation Management System — database schema.
+//
+// Constraints that Prisma cannot express are added in raw SQL migrations:
+//   - resources_capacity_positive         CHECK (capacity IS NULL OR capacity > 0)
+//   - reservations_valid_range            CHECK (ends_at > starts_at)
+//   - reservations_no_overlap             EXCLUDE USING gist (resource_id WITH =,
+//                                           tstzrange(starts_at, ends_at, '[)') WITH &&)
+//                                           WHERE (status = 'CONFIRMED')
+// See prisma/migrations and README.md ("Conflict prevention").
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ResourceType {
+  MEETING_ROOM
+  CONFERENCE_ROOM
+  TRAINING_ROOM
+  WORKSPACE
+  EQUIPMENT
+  OTHER
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model Resource {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @unique @db.VarChar(100)
+  description  String?       @db.VarChar(500)
+  type         ResourceType
+  location     String?       @db.VarChar(100)
+  capacity     Int?
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  reservations Reservation[]
+
+  @@index([type])
+  @@index([isActive])
+  @@map("resources")
+}
+
+model Reservation {
+  id             String            @id @default(uuid()) @db.Uuid
+  // Human-friendly sequential reference, displayed as RSV-000042.
+  number         Int               @unique @default(autoincrement())
+  resourceId     String            @map("resource_id") @db.Uuid
+  resource       Resource          @relation(fields: [resourceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  // Demonstration identity: there is no authentication, so the requester is recorded as entered.
+  requesterName  String            @map("requester_name") @db.VarChar(100)
+  requesterEmail String?           @map("requester_email") @db.VarChar(254)
+  purpose        String            @db.VarChar(200)
+  startsAt       DateTime          @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime          @map("ends_at") @db.Timestamptz(3)
+  status         ReservationStatus @default(CONFIRMED)
+  cancelledAt    DateTime?         @map("cancelled_at") @db.Timestamptz(3)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([resourceId, startsAt])
+  @@index([startsAt])
+  @@index([status, startsAt])
+  @@index([updatedAt])
+  @@map("reservations")
+}

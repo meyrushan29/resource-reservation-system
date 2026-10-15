@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rrs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rrs
+      POSTGRES_PASSWORD: rrs_dev_password
+      POSTGRES_DB: reservations
+    ports:
+      - "5433:5432"
+    volumes:
+      - rrs-pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/01-init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rrs -d reservations"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  rrs-pgdata:
